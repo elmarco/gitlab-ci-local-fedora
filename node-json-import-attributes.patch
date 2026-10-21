@@ -1,0 +1,23 @@
+Add JSON import attributes so the sources also load under plain Node.js,
+not only inside bundlers (bun and esbuild inline JSON imports without
+requiring attributes). Upstreamable as-is.
+
+--- a/src/index.ts
++++ b/src/index.ts
+@@ -12,7 +12,7 @@
+ import {AssertionError} from "assert";
+ import {Job, cleanupJobResources} from "./job.js";
+ import {GitlabRunnerPresetValues} from "./gitlab-preset.js";
+-import packageJson from "../package.json";
++import packageJson from "../package.json" with { type: "json" };
+ 
+ const jobs: Job[] = [];
+ 
+--- a/src/schema.ts
++++ b/src/schema.ts
+@@ -1,4 +1,4 @@
+-import schema from "./schema.json";
++import schema from "./schema.json" with { type: "json" };
+ 
+ // Remove patterns that are too strict for gitlab-ci-local usage
+ delete schema.definitions.include_item.oneOf[0].pattern; // include shorthand rejects glob wildcards

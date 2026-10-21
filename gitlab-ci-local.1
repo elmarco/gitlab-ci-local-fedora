@@ -1,0 +1,280 @@
+.TH GITLAB-CI-LOCAL 1 "October 2026" "gitlab-ci-local" "User Commands"
+.SH NAME
+gitlab-ci-local \- run GitLab CI pipelines locally
+.SH SYNOPSIS
+.B gitlab-ci-local
+[\fIOPTIONS\fR]... [\fIJOB\fR]...
+.SH DESCRIPTION
+.B gitlab-ci-local
+parses a
+.I .gitlab-ci.yml
+pipeline and executes its jobs locally, the same way a GitLab Runner would:
+shell jobs run directly on the host, jobs with an
+.B image
+run in local containers (docker or podman). It expands includes, extends,
+references, variables, rules and
+.I needs
+before execution, and it creates artifacts locally, so pipelines can be
+debugged without pushing a single commit.
+.PP
+If no job is specified, the whole pipeline is executed; otherwise only the
+named jobs (and, with
+.BR \-\-needs ,
+the jobs they need).
+.SH OPTIONS
+.SS General
+.TP
+.BR \-\-help
+Show help.
+.TP
+.BR \-\-version
+Show version number.
+.TP
+.BI \-\-cwd \ PATH
+Path to a current working directory.
+.TP
+.BI \-\-file \ PATH
+Location of the
+.IR .gitlab\-ci.yml ,
+relative to cwd
+.RI ( default :
+.IR .gitlab\-ci.yml ).
+.TP
+.BI \-\-home \ PATH
+Location of the HOME
+.I .gitlab\-ci\-local
+folder.
+.TP
+.BI \-\-state\-dir \ PATH
+Location of the
+.I .gitlab\-ci\-local
+state dir, relative to cwd.
+.TP
+.BR \-\-completion
+Generate tab completion script (zsh).
+.TP
+.BR \-\-quiet
+Suppress all job output.
+.TP
+.BR \-\-timestamps
+Show timestamps and job duration in the logs.
+.TP
+.BI \-\-max\-job\-name\-padding \ N
+Maximum padding for job name (use <= 0 for no padding).
+.TP
+.BR \-\-color ", " \-\-no\-color
+Enable/disable color output (default: enabled).
+.SS Selecting jobs
+.TP
+.BI \-\-manual \ JOB
+One or more manual jobs to run during a pipeline.
+.TP
+.BR \-\-list
+List job information, excluding
+.B when:never
+jobs.
+.TP
+.BR \-\-list\-all
+List job information, including
+.B when:never
+jobs.
+.TP
+.BR \-\-list\-json
+List job information in JSON format.
+.TP
+.BR \-\-list\-csv ", " \-\-list\-csv\-all
+List job information in CSV format.
+.TP
+.BR \-\-validate\-dependency\-chain
+Validate that jobs needed by, or dependent on, active jobs are also active,
+without running anything.
+.TP
+.BR \-\-needs
+Run needed jobs when executing specific jobs.
+.TP
+.BR \-\-only\-needs
+Run needed jobs, except the specified jobs themselves.
+.TP
+.BI \-\-stage \ STAGE
+Run all jobs in a specific stage.
+.SS Variables and inputs
+.TP
+.BI \-\-variable \ KEY=VALUE
+Add a variable to all executed jobs. Repeatable.
+.TP
+.BI \-\-unset\-variable \ KEY
+Unset a variable. Repeatable.
+.TP
+.BI \-\-input \ KEY=VALUE
+Add input to component includes. Repeatable.
+.TP
+.BI \-\-variables\-file \ PATH
+Path to the project file variables
+.RI ( default :
+.IR .gitlab\-ci\-local\-variables.yml ).
+.TP
+.BI \-\-inputs\-file \ PATH
+Path to the component inputs file
+.RI ( default :
+.IR .gitlab\-ci\-local\-inputs.yml ).
+.TP
+.BI \-\-remote\-variables \ URL
+Fetch variables file from a remote location.
+.TP
+.BI \-\-ignores\-file \ PATH
+Path to the ignores file
+.RI ( default :
+.IR .gitlab\-ci\-local\-ignores ).
+.SS Parsing and schema
+.TP
+.BR \-\-preview
+Print the YAML with defaults, includes, extends and references expanded.
+.TP
+.BR \-\-fetch\-includes
+Fetch all external includes one more time.
+.TP
+.BI \-\-maximum\-includes \ N
+The maximum number of includes.
+.TP
+.BR \-\-json\-schema\-validation ", " \-\-no\-json\-schema\-validation
+Enable/disable JSON schema validation (default: enabled).
+.TP
+.BI \-\-ignore\-schema\-paths \ PATH
+JSON schema paths that will be ignored. Repeatable.
+.TP
+.BI \-\-ignore\-predefined\-vars \ VARS
+Comma-separated list of predefined pipeline variables for which warnings
+should be ignored.
+.TP
+.BR \-\-evaluate\-rule\-changes ", " \-\-no\-evaluate\-rule\-changes
+Whether to evaluate
+.B rule:changes
+(default: enabled).
+.TP
+.BR \-\-skip\-input\-validation
+Skip CI/CD input type, options, and regex validation.
+.SS Executors and containers
+.TP
+.BR \-\-shell\-isolation
+Enable artifact isolation for shell-executor jobs.
+.TP
+.BR \-\-force\-shell\-executor
+Force all jobs to be executed using the shell executor (only when the jobs do
+not require docker features).
+.TP
+.BR \-\-shell\-executor\-no\-image
+Use the shell executor when no image is specified.
+.TP
+.BI \-\-default\-image \ IMAGE
+Image to use for containers when
+.B \-\-shell\-executor\-no\-image=false
+and the job has no image.
+.TP
+.BI \-\-helper\-image \ IMAGE
+Image to use for utils containers.
+.TP
+.BI \-\-wait\-image \ IMAGE
+Image to use for the wait container.
+.TP
+.BI \-\-wait\-for\-services\-timeout \ SECONDS
+Timeout for service health checks (default: 30).
+.TP
+.BR \-\-mount\-cache
+Enable docker mount based caching.
+.TP
+.BR \-\-umask
+Set the docker user to 0:0.
+.TP
+.BI \-\-userns \ MODE
+Set the docker executor userns option.
+.TP
+.BR \-\-privileged
+Set the docker executor to privileged mode.
+.TP
+.BI \-\-device \ DEVICE
+Add devices to the docker executor. Repeatable.
+.TP
+.BI \-\-ulimit \ N
+Set docker executor ulimit.
+.TP
+.BI \-\-shm\-size \ SIZE
+Set docker executor shared memory size (e.g.\ 256m, 1g).
+.TP
+.BI \-\-network \ NETWORK
+Add networks to the docker executor. Repeatable.
+.TP
+.BI \-\-volume \ VOLUME
+Add volumes to the docker executor. Repeatable.
+.TP
+.BI \-\-extra\-host \ HOST
+Add extra docker host entries. Repeatable.
+.TP
+.BI \-\-seccomp \ PATH
+Set the seccomp profile of containers.
+.TP
+.BI \-\-ca\-file \ PATH
+Path to a custom CA certificate file to mount in containers.
+.TP
+.BI \-\-pull\-policy \ POLICY
+Set image pull-policy
+.RI ( always " or " if\-not\-present ).
+.TP
+.BI \-\-container\-executable \ CMD
+Command to start the container engine (docker or podman).
+.TP
+.BI \-\-container\-mac\-address \ MAC
+Container MAC address (e.g.\ aa:bb:cc:dd:ee:ff).
+.TP
+.BI \-\-container\-emulate \ RUNNER
+Emulate a gitlab.com hosted runner (name without architecture).
+.TP
+.BI \-\-gpus \ IDS
+A list of GPU indexes or 'all'.
+.TP
+.BR \-\-registry
+Start a local docker registry and configure containers to use it.
+.SS Artifacts and cleanup
+.TP
+.BR \-\-artifacts\-to\-source
+Copy the generated artifacts into cwd.
+.TP
+.BR \-\-cleanup
+Remove docker resources after they have been used.
+.TP
+.BI \-\-concurrency \ N
+Limit the number of jobs that run simultaneously.
+.SH ENVIRONMENT
+Every option can be set by default through the corresponding environment
+variable, prefixed with
+.B GCL_
+and upper-cased, e.g.\ \fBGCL_NEEDS=true\fR for \fB\-\-needs\fR.
+Alternatively, defaults can be placed in
+.I .gitlab\-ci\-local\-env
+in the working directory, or in
+.IR $HOME/.gitlab\-ci\-local/.env .
+.SH FILES
+.TP
+.I .gitlab\-ci.yml
+The pipeline definition executed in the current directory.
+.TP
+.I $HOME/.gitlab\-ci\-local/
+Per-user state: remote and home file variables, cached remote includes.
+.TP
+.I .gitlab\-ci\-local/
+Project state dir: cached remote includes, job artifacts and logs.
+.SH EXAMPLES
+.TP
+List the jobs of the pipeline in the current git repository:
+.B gitlab\-ci\-local \-\-list
+.TP
+Run the whole pipeline:
+.B gitlab\-ci\-local
+.TP
+Run a single job and the jobs it needs:
+.B gitlab\-ci\-local \-\-needs \-\-stage=build \-j build\-job
+.TP
+Print the fully expanded pipeline YAML:
+.B gitlab\-ci\-local \-\-preview
+.SH SEE ALSO
+.UR https://github.com/firecow/gitlab-ci-local
+.UE
